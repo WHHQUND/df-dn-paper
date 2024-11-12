@@ -49,16 +49,12 @@ def run_GBT():
     storage_dict = {}
     cnt = 1
     for classes in classes_space:
-        print(f"{cnt} out of {len(classes_space)}")
-        print(classes)
         cnt += 1
         d1 = {}
         # cohen_kappa vs num training samples (gbt)
         for samples in samples_space:
-            print(f"Sample size: {samples}")
             l3 = []
-            # train data
-            # print("init GBT model")
+
             gbt_model = xgb.XGBClassifier(
                 n_estimators=221,
                 max_depth=16,
@@ -81,9 +77,8 @@ def run_GBT():
                 samples,
                 classes,
             )
-            print("Accuracy:", acc)
-            print("Train time:", train_time)
-            print(" ")
+            
+            # Store the results
             gbt_acc.append(acc)
             gbt_kappa.append(cohen_kappa)
             gbt_ece.append(ece)
@@ -141,13 +136,10 @@ def run_naive_rf():
     storage_dict = {}
     cnt = 1
     for classes in classes_space:
-        print(f"{cnt} out of {len(classes_space)}")
-        print(classes)
         cnt += 1
         d1 = {}
         # cohen_kappa vs num training samples (naive_rf)
         for samples in samples_space:
-            print(f"Sample size: {samples}")
             l3 = []
             RF = RandomForestClassifier(
                 n_estimators=277, 
@@ -169,9 +161,8 @@ def run_naive_rf():
                 samples,
                 classes,
             )
-            print("Accuracy:", acc)
-            print("Train time:", train_time)
-            print(" ")
+            
+            # Store the results
             naive_rf_acc.append(acc)
             naive_rf_kappa.append(cohen_kappa)
             naive_rf_ece.append(ece)
@@ -243,17 +234,12 @@ def run_cnn32():
     storage_dict = {}
     cnt = 1
     for classes in classes_space:
-        print(f"{cnt} out of {len(classes_space)}")
-        print(classes)
         cnt += 1
         d1 = {}
         # cohen_kappa vs num training samples (cnn32)
         for samples in samples_space:
-            print(f"Sample size: {samples}")
             l3 = []
             # train data
-            # train_images, test_valid_images, train_labels, test_valid_labels = split_data(transform=data_transforms)
-            # global train_images, test_valid_images, train_labels, test_valid_labels
 
             cnn32_train_images = trainx.copy()
             cnn32_train_labels = trainy.copy()
@@ -288,9 +274,8 @@ def run_cnn32():
                 momentum=0,
                 weight_decay=0,
             )
-            print("Accuracy:", acc)
-            print("Train time:", train_time)
-            print(" ")
+            
+            # Store the results
             cnn32_acc.append(acc)
             cnn32_kappa.append(cohen_kappa)
             cnn32_ece.append(ece)
@@ -366,14 +351,10 @@ def run_cnn32_2l():
     storage_dict = {}
     cnt = 1
     for classes in classes_space:
-        print(f"{cnt} out of {len(classes_space)}")
-        print(classes)
         cnt += 1
         d1 = {}
-
         # cohen_kappa vs num training samples (cnn32_2l)
         for samples in samples_space:
-            print(f"Sample size: {samples}")
             l3 = []
             # train data
             cnn32_2l_train_images = trainx.copy()
@@ -408,9 +389,8 @@ def run_cnn32_2l():
                 # momentum=0,
                 weight_decay=0.00035079838014085373,
             )
-            print("Accuracy:", acc)
-            print("Train time:", train_time)
-            print(" ")
+            
+            # Store the results
             cnn32_2l_acc.append(acc)
             cnn32_2l_kappa.append(cohen_kappa)
             cnn32_2l_ece.append(ece)
@@ -486,14 +466,10 @@ def run_cnn32_5l():
 
     cnt = 1
     for classes in classes_space:
-        print(f"{cnt} out of {len(classes_space)}")
-        print(classes)
         cnt += 1
         d1 = {}
-
         # cohen_kappa vs num training samples (cnn32_5l)
         for samples in samples_space:
-            print(f"Sample size: {samples}")
             l3 = []
             # train data
             cifar_trainset = datasets.CIFAR100(
@@ -529,9 +505,8 @@ def run_cnn32_5l():
                 # momentum=0,
                 weight_decay=0.015102902024568963,
             )
-            print("Accuracy:", acc)
-            print("Train time:", train_time)
-            print(" ")
+            
+            # Store the results
             cnn32_5l_acc.append(acc)
             cnn32_5l_kappa.append(cohen_kappa)
             cnn32_5l_ece.append(ece)
@@ -606,13 +581,10 @@ def run_resnet18():
     storage_dict = {}
     cnt = 1
     for classes in classes_space:
-        print(f"{cnt} out of {len(classes_space)}")
-        print(classes)
         cnt += 1
         d1 = {}
         # cohen_kappa vs num training samples (resnet18)
         for samples in samples_space:
-            print(f"Sample size: {samples}")
             l3 = []
             # train data
             res_train_images = trainx.copy()
@@ -650,9 +622,8 @@ def run_resnet18():
                 # momentum=0,
                 weight_decay=0.0036345023714351886,
             )
-            print("Accuracy:", acc)
-            print("Train time:", train_time)
-            print(" ")
+            
+            # Store the results
             resnet18_acc.append(acc)
             resnet18_kappa.append(cohen_kappa)
             resnet18_ece.append(ece)
@@ -735,7 +706,6 @@ if __name__ == "__main__":
     # normalize
     # scale = np.mean(np.arange(0, 256))
     # normalize = lambda x: (x - scale) / scale
-    # New normalized method by Ziyan Li 
     normalize = lambda x: x / 255.0
 
     # for CNNs
@@ -744,12 +714,12 @@ if __name__ == "__main__":
     # )
 
     # for resnet
-    data_transforms = transforms.Compose(
-        [
-            transforms.ToTensor(),
-            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
-        ]
-    )
+    # data_transforms = transforms.Compose(
+    #     [
+    #         transforms.ToTensor(),
+    #         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+    #     ]
+    # )
 
 
     # train data
@@ -800,20 +770,20 @@ if __name__ == "__main__":
     test_validx = test_valid_images.copy()
     test_validy = test_valid_labels.copy()
 
-    # print("Running GBT tuning \n")
-    # run_GBT()
+    print("Running GBT tuning \n")
+    run_GBT()
 
-    # print("Running RF tuning \n")
-    # run_naive_rf()
+    print("Running RF tuning \n")
+    run_naive_rf()
 
-    # print("Running CNN32 tuning \n")
-    # run_cnn32()
+    print("Running CNN32 tuning \n")
+    run_cnn32()
 
-    # print("Running CNN32_2l tuning \n")
-    # run_cnn32_2l()
+    print("Running CNN32_2l tuning \n")
+    run_cnn32_2l()
 
     print("Running CNN32_5l tuning \n")
     run_cnn32_5l()
 
-    # print("Running Resnet18 tuning \n")
-    # run_resnet18()
+    print("Running Resnet18 tuning \n")
+    run_resnet18()

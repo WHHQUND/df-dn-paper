@@ -187,43 +187,6 @@ def get_ece(predicted_posterior, predicted_label, true_label, num_bins=40):
     score /= total_sample
     return score
 
-# def split_data(transform = None):
-#     cifar_trainset = datasets.CIFAR10(
-#         root="./", train=True, download=True, transform=transform
-#     )
-#     cifar_train_images = cifar_trainset.data
-#     cifar_train_labels = np.array(cifar_trainset.targets)
-
-#     # test data
-#     cifar_testset = datasets.CIFAR10(
-#         root="./", train=False, download=True, transform=transform
-#     )
-#     cifar_test_images = cifar_testset.data
-#     cifar_test_labels = np.array(cifar_testset.targets)
-
-#     # cifar_train_images = cifar_train_images.reshape(-1, 32 * 32 * 3)
-#     # cifar_test_images = cifar_test_images.reshape(-1, 32 * 32 * 3)
-
-#     # concatenate data
-#     images = np.concatenate((cifar_train_images, cifar_test_images))
-#     labels = np.concatenate((cifar_train_labels, cifar_test_labels))
-
-#     # shuffle data
-#     indices = np.arange(images.shape[0])
-#     np.random.shuffle(indices)
-#     images = images[indices]
-#     labels = labels[indices]
-
-#     # split data
-#     train_images, test_valid_images, train_labels, test_valid_labels = train_test_split(
-#         images, labels, test_size=0.5, random_state=317
-#     )
-
-#     train_images = train_images.reshape(-1, 3, 32, 32)
-#     test_valid_images = test_valid_images.reshape(-1, 3, 32, 32)
-
-#     return train_images, test_valid_images, train_labels, test_valid_labels
-
 
 def remap_labels(labels):
     unique_labels = np.unique(labels)
@@ -245,15 +208,12 @@ def run_gbt_image_set(
     Peforms multiclass predictions for a gradient boosted trees classifier
     with fixed total samples
     """
-    # print("inside gbt")
-    # print(type(model))
     num_classes = len(classes)
     partitions = np.array_split(np.array(range(samples)), num_classes)
     # Obtain only train images and labels for selected classes
     image_ls = []
     label_ls = []
     i = 0
-    # print(classes)
     for cls in classes:
         class_idx = np.argwhere(train_labels == cls).flatten()
         np.random.shuffle(class_idx)
@@ -282,17 +242,16 @@ def run_gbt_image_set(
     test_labels_remapped = np.vectorize(label_mapping.get)(test_labels)
     start_time = time.perf_counter()
     model.fit(train_images, train_labels_remapped)
-    # print("Finished 1 epoch")
     end_time = time.perf_counter()
     train_time = end_time - start_time
+
     # Test the model
     start_time = time.perf_counter()
     test_preds = model.predict(test_images)
-    # print(test_preds, "|", test_labels, "\n")
     end_time = time.perf_counter()
     test_time = end_time - start_time
     test_probs = model.predict_proba(test_images)
-    # print(get_ece(test_probs, test_preds, test_labels_remapped))
+
     return (
         accuracy_score(test_labels_remapped, test_preds),
         cohen_kappa_score(test_labels_remapped, test_preds),
@@ -318,7 +277,6 @@ def run_rf_image_set(
     Peforms multiclass predictions for a random forest classifier
     with fixed total samples
     """
-    # print("1:",len(train_images), len(train_labels))
     num_classes = len(classes)
     partitions = np.array_split(np.array(range(samples)), num_classes)
 
@@ -350,7 +308,6 @@ def run_rf_image_set(
 
     # Train the model
     start_time = time.perf_counter()
-    # print("2:",len(train_images), len(train_labels))
     model.fit(train_images, train_labels)
     end_time = time.perf_counter()
     train_time = end_time - start_time
@@ -362,7 +319,6 @@ def run_rf_image_set(
     test_time = end_time - start_time
 
     test_probs = model.predict_proba(test_images)
-    # print(" ")
 
     return (
         accuracy_score(test_labels, test_preds),
@@ -374,83 +330,6 @@ def run_rf_image_set(
         test_labels,
         test_preds
     )
-
-
-# def run_dn_image_set(
-#     model,
-#     train_loader,
-#     test_loader,
-#     time_limit,
-#     ratio,
-#     lr=0.001,
-#     batch=64,
-# ):
-#     """
-#     Peforms multiclass predictions for a deep network classifier
-#     """
-#     # define model
-#     dev = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-#     model.to(dev)
-#     # loss and optimizer
-#     criterion = nn.CrossEntropyLoss()
-#     optimizer = optim.SGD(model.parameters(), lr=lr, momentum=0.9)
-
-#     model.train()
-#     start_time = time.perf_counter()
-#     while True:  # loop over the dataset multiple times
-
-#         for i, data in enumerate(train_loader, 0):
-#             # get the inputs
-#             inputs, labels = data
-#             inputs = inputs.clone().detach().to(dev)
-#             labels = labels.clone().detach().to(dev)
-#             # zero the parameter gradients
-#             optimizer.zero_grad()
-
-#             # forward + backward + optimize
-#             outputs = model(inputs)
-#             loss = criterion(outputs, labels)
-#             loss.backward()
-#             optimizer.step()
-
-#         end_time = time.perf_counter()
-#         if (end_time - start_time) / ratio >= time_limit:
-#             train_time = end_time - start_time
-#             break
-
-#     # test the model
-#     model.eval()
-#     first = True
-#     prob_cal = nn.Softmax(dim=1)
-#     start_time = time.perf_counter()
-#     test_preds = []
-#     test_labels = []
-#     with torch.no_grad():
-#         for data in test_loader:
-#             images, labels = data
-#             images = images.clone().detach().to(dev)
-#             labels = labels.clone().detach().to(dev)
-#             test_labels = np.concatenate((test_labels, labels.tolist()))
-
-#             outputs = model(images)
-#             _, predicted = torch.max(outputs.data, 1)
-#             test_preds = np.concatenate((test_preds, predicted.tolist()))
-
-#             test_prob = prob_cal(outputs)
-#             if first:
-#                 test_probs = test_prob.tolist()
-#                 first = False
-#             else:
-#                 test_probs = np.concatenate((test_probs, test_prob.tolist()))
-
-#     end_time = time.perf_counter()
-#     test_time = end_time - start_time
-#     return (
-#         cohen_kappa_score(test_preds, test_labels),
-#         get_ece(test_probs, test_preds, test_labels),
-#         train_time,
-#         test_time,
-#     )
 
 
 def run_dn_image_5l(
@@ -473,9 +352,8 @@ def run_dn_image_5l(
     # define model
     dev = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model.to(dev)
-    # loss and optimizer
-    # criterion = nn.CrossEntropyLoss()
 
+    # loss and optimizer
     # define optimizer
     if optimizer_name == 'sgd':
         optimizer = optim.SGD(model.parameters(), lr=lr, momentum=momentum, weight_decay=weight_decay, dampening=dampening)
@@ -492,15 +370,9 @@ def run_dn_image_5l(
     for epoch in range(epochs):  # loop over the dataset multiple times
         model.train()
         for i, data in enumerate(train_loader, 0):
-            # get the inputs
-            # print("Here1")
-            # print(data)
             inputs, labels = data
             inputs = inputs.clone().detach().to(dev)
             labels = labels.clone().detach().to(dev)
-
-            # inputs = train_data[i : i + batch].to(dev)
-            # labels = train_labels[i : i + batch].to(dev)
 
             # zero the parameter gradients
             optimizer.zero_grad()
@@ -516,9 +388,6 @@ def run_dn_image_5l(
         cur_loss = 0
         with torch.no_grad():
             for i, data in enumerate(valid_loader, 0):
-                # get the inputs
-                # print("Here2")
-                # print(data)
                 inputs, labels = data
                 inputs = inputs.clone().detach().to(dev)
                 labels = labels.clone().detach().to(dev)
@@ -527,6 +396,7 @@ def run_dn_image_5l(
                 outputs = model(inputs)
                 loss = criterion(outputs, labels)
                 cur_loss += loss
+
         # early stop if 3 epochs in a row no loss decrease
         if cur_loss < prev_loss:
             prev_loss = cur_loss
@@ -569,6 +439,7 @@ def run_dn_image_5l(
 
     end_time = time.perf_counter()
     test_time = end_time - start_time
+
     return (
         accuracy_score(test_preds, test_labels),
         cohen_kappa_score(test_preds, test_labels),
@@ -604,15 +475,15 @@ def run_dn_image_es(
     # define model
     dev = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model.to(dev)
+
     # loss and optimizer
-    # criterion = nn.CrossEntropyLoss()
-    # optimizer = optim.SGD(model.parameters(), lr=lr, momentum=0.9)
     if optimizer_name == 'sgd':
         optimizer = optim.SGD(model.parameters(), lr=lr, momentum=momentum, weight_decay=weight_decay, dampening=dampening)
     elif optimizer_name == 'adam':
         optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
     else:
         raise ValueError(f"Unknown optimizer: {optimizer_name}")
+    
     # early stopping setup
     prev_loss = float("inf")
     flag = 0
@@ -628,8 +499,6 @@ def run_dn_image_es(
 
             # print(inputs.shape, labels.shape)
             if inputs.shape[0] <= 2:
-                # inputs = torch.cat((inputs, inputs, inputs), dim = 0)
-                # labels = torch.cat((labels, labels, labels), dim = 0)
                 continue
 
             # forward + backward + optimize
@@ -654,6 +523,7 @@ def run_dn_image_es(
                 outputs = model(inputs)
                 loss = criterion(outputs, labels)
                 cur_loss += loss
+
         # early stop if 3 epochs in a row no loss decrease
         if cur_loss < prev_loss:
             prev_loss = cur_loss
@@ -692,6 +562,7 @@ def run_dn_image_es(
     end_time = time.perf_counter()
     test_time = end_time - start_time
     test_labels = np.array(test_labels.tolist())
+
     return (
         accuracy_score(test_preds, test_labels),
         cohen_kappa_score(test_preds, test_labels),
@@ -702,62 +573,6 @@ def run_dn_image_es(
         test_labels,
         test_preds
     )
-
-
-# def create_loaders_set(
-#     train_labels, test_labels, classes, trainset, testset, samples, batch=64
-# ):
-#     """
-#     Creates training and testing loaders with fixed total samples
-#     """
-#     classes = np.array(list(classes))
-#     num_classes = len(classes)
-#     partitions = np.array_split(np.array(range(samples)), num_classes)
-
-#     # get indicies of classes we want
-#     class_idxs = []
-#     i = 0
-#     for cls in classes:
-#         class_idx = np.argwhere(train_labels == cls).flatten()
-#         np.random.shuffle(class_idx)
-#         class_idx = class_idx[: len(partitions[i])]
-#         class_idxs.append(class_idx)
-#         i += 1
-
-#     np.random.shuffle(class_idxs)
-
-#     train_idxs = np.concatenate(class_idxs)
-#     # change the labels to be from 0-len(classes)
-#     for i in train_idxs:
-#         trainset.targets[i] = np.where(classes == trainset.targets[i])[0][0]
-
-#     train_sampler = torch.utils.data.sampler.SubsetRandomSampler(train_idxs)
-#     train_loader = torch.utils.data.DataLoader(
-#         trainset, batch_size=batch, num_workers=4, sampler=train_sampler, drop_last=True
-#     )
-
-#     # get indicies of classes we want
-#     test_idxs = []
-#     for cls in classes:
-#         test_idx = np.argwhere(test_labels == cls).flatten()
-#         test_idxs.append(test_idx)
-
-#     test_idxs = np.concatenate(test_idxs)
-
-#     # change the labels to be from 0-len(classes)
-#     for i in test_idxs:
-#         testset.targets[i] = np.where(classes == testset.targets[i])[0][0]
-
-#     test_sampler = torch.utils.data.sampler.SubsetRandomSampler(test_idxs)
-#     test_loader = torch.utils.data.DataLoader(
-#         testset,
-#         batch_size=batch,
-#         shuffle=False,
-#         num_workers=4,
-#         sampler=test_sampler,
-#         drop_last=True,
-#     )
-#     return train_loader, test_loader
 
 
 def create_loaders_es(
@@ -878,9 +693,7 @@ def prepare_data(
     valid_labels = torch.LongTensor(test_labels[validation_idxs])
     test_images = torch.FloatTensor(test_images[test_idxs])
     test_labels = torch.LongTensor(test_labels[test_idxs])
-    # print("train_images", train_images.shape)
-    # print("test_images", test_images.shape)
-    # print("valid_images", valid_images.shape)
+
     return (
         train_images,
         train_labels,
@@ -889,60 +702,4 @@ def prepare_data(
         test_images,
         test_labels,
     )
-
-
-# def prepare_data(
-#     images, labels, samples, classes
-# ):
-
-#     classes = np.array(list(classes))
-#     num_classes = len(classes)
-#     total_samples = len(labels)
-#     # print("samples", samples)
-#     # print("total_samples", total_samples)
-    
-#     # train_size = total_samples * 2 // 4
-#     # valid_size = total_samples // 4
-#     # test_size = total_samples // 4
-
-#     class_idxs = []
-#     for cls in classes:
-#         class_idx = np.argwhere(labels == cls).flatten()
-#         np.random.shuffle(class_idx)
-#         class_idx = class_idx[:samples*2 // num_classes]
-#         class_idxs.append(class_idx)
-    
-#     all_idxs = np.concatenate(class_idxs)
-#     np.random.shuffle(all_idxs)
-#     # print("all_idxs", len(all_idxs))
-#     train_idxs = all_idxs[:len(all_idxs) * 2 // 4]
-#     valid_idxs = all_idxs[len(all_idxs) * 2 // 4:len(all_idxs) * 3 // 4]
-#     test_idxs = all_idxs[len(all_idxs) * 3 // 4:]
-
-#     for i in train_idxs:
-#         labels[i] = np.where(classes == labels[i])[0][0]
-#     for i in valid_idxs:
-#         labels[i] = np.where(classes == labels[i])[0][0]
-#     for i in test_idxs:
-#         labels[i] = np.where(classes == labels[i])[0][0]
-
-#     train_images = torch.FloatTensor(images[train_idxs])
-#     train_labels = torch.LongTensor(labels[train_idxs])
-#     valid_images = torch.FloatTensor(images[valid_idxs])
-#     valid_labels = torch.LongTensor(labels[valid_idxs])
-#     test_images = torch.FloatTensor(images[test_idxs])
-#     test_labels = torch.LongTensor(labels[test_idxs])
-#     print("samples", samples)
-#     # print("train_images", train_images.shape)
-#     # print("test_images", test_images.shape)
-#     # print("valid_images", valid_images.shape)
-    
-#     return (
-#         train_images,
-#         train_labels,
-#         valid_images,
-#         valid_labels,
-#         test_images,
-#         test_labels,
-#     )
 
