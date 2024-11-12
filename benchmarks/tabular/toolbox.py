@@ -6,6 +6,7 @@ Coauthors: Michael Ainsworth
 """
 
 
+import random
 import numpy as np
 import pandas as pd
 from random import sample
@@ -20,6 +21,9 @@ from sklearn.model_selection import RandomizedSearchCV
 import torch
 import warnings
 warnings.filterwarnings("ignore")
+
+random.seed(317)
+np.random.seed(317)
 
 def convert_ndarray_to_list(obj):
     if isinstance(obj, np.ndarray):
@@ -98,15 +102,6 @@ def random_sample_new(
 
     return final_inds
 
-
-# def sample_large_datasets(X_data, y_data, max_size=10000):
-#     """
-#     For large datasets with over 10000 samples, resample the data to only include
-#     10000 random samples.
-#     """
-#     inds = [i for i in range(X_data.shape[0])]
-#     fin = sorted(sample(inds, max_size))
-#     return X_data[fin], y_data[fin]
 
 def sample_large_datasets(X_data, y_data, max_size=10000):
     """

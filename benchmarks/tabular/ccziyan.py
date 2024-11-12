@@ -23,27 +23,29 @@ dataset_indices = list(range(dataset_indices_max))
 dict_data_indices = {dataset_ind: {} for dataset_ind in dataset_indices}
 prefix = "new_results"
 
-# Load data
-SUITE_ID = [337]
+# Load data by dataset index
+SUITE_ID = [334, 337]
 X_data_list, y_data_list, dataset_name = import_datasets(SUITE_ID)
 
 RF = 0
 XGBT = 0
-DN = 1
+DN = 0
 
 def load_params(file_path):
     with open(file_path, 'r') as file:
         return json.load(file)
 
-
+# File path
 path_rf = "SmacResults/337/RF_params_1hr.json"
 path_xgbt = "SmacResults/337/XGBT_params_1hr.json"
 path_tab = "SmacResults/337/Tab_params_1hr.json"
 
+# Load parameters
 params_rf = load_params(path_rf)
 params_xgbt = load_params(path_xgbt)
 params_tab = load_params(path_tab)
 
+# Start 
 for dataset_index, dataset in enumerate(dataset_indices):
     # if dataset == 2:
     print("\n\nCurrent Dataset: ", dataset, dataset_name[dataset_index])
@@ -93,21 +95,7 @@ for dataset_index, dataset in enumerate(dataset_indices):
     y_val = y_encoded[val_indices]
     X_test = X[test_indices]
     y_test = y_encoded[test_indices]
-
-    # print("Shape of X_train:", X_train.shape)
-    # print("Shape of y_train:", y_train.shape)
-
-    # # print("Unique labels in training set:", np.unique(y_train))
-    # # print("length of training set:", len(y_train))
-    # print("length of unique labels in training set:", len(np.unique(y_train)))
-    # # print("Unique labels in validation set:", np.unique(y_val))
-    # # print("length of validation set:", len(y_val))
-    # print("length of unique labels in validation set:", len(np.unique(y_val)))
-    # # print("Unique labels in test set:", np.unique(y_test))
-    # # print("length of test set:", len(y_test))
-    # print("length of unique labels in test set:", len(np.unique(y_test)))
-
-    
+ 
 
     if RF == 1:
         print("\n Training Random Forest")
@@ -185,7 +173,7 @@ for dataset_index, dataset in enumerate(dataset_indices):
     if DN == 1:
         print("\n Training TabNet")
 
-        if dataset_name[dataset_index] ==  "default-of-credit-card-clients":
+        if dataset_name[dataset_index] ==  "credit":
 
             ### For tuned parameters
             current_params = params_tab.get(dataset_name[dataset_index], {})
