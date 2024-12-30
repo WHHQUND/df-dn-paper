@@ -41,11 +41,11 @@ We will continue to refine this technical report and update the results in the c
 
 ## Features
 ---
-
+- This project uses multiple types of data (audio, vision, and tabular) to evaluate the performance of different machine learning approaches.
 - Evaluate and compare the performance of deep neural networks and decision forests on various tasks
 - Assess model performance across auditory, tabular, and vision datasets with varying sample sizes, as well as multi-class classification tasks for each dataset
 - Comparison of raw models and tuned models for performance evaluation, analyze how tuning impacts model performance
-- Explore the conceptual similarities and differences between these two modeling approaches
+- Explore the similarities, differences between these two modeling approaches and understand how these models behave when dealing with diverse data sources and sample sizes.
 
 <br>
 
@@ -61,6 +61,25 @@ Install the packages:
 ```bash
 pip install -r requirements.txt
 ```
+
+For all the benchmarks, you can run through the corresponding *SMAC_search.ipynb* to get the best hyperparameters for each model.
+
+For auditory benchmarks, you can run the following command:  
+```bash
+python fsdk18.py -m class_number -f feature_type -data data_location -labels labels_location
+```
+
+For vision benchmarks, you can run the following command:  
+```bash
+python cifar_10/ cifar_100.py -m class_number
+```
+
+For tabular benchmarks, you can run the following command:  
+```bash
+python cc18.py
+```
+
+You can get the results plots by run though *fsdd_figures/ cifar_figure/ tabular_figures.ipynb* under the docs folder.
 
 <br>
 
