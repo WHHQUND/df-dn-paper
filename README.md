@@ -71,7 +71,7 @@ python fsdk18.py -m class_number -f feature_type -data data_location -labels lab
 
 For vision benchmarks, you can run the following command:  
 ```bash
-python cifar_10/ cifar_100.py -m class_number
+python cifar_10/cifar_100.py -m class_number
 ```
 
 For tabular benchmarks, you can run the following command:  
@@ -79,7 +79,7 @@ For tabular benchmarks, you can run the following command:
 python cc18.py
 ```
 
-You can get the results plots by run though *fsdd_figures/ cifar_figure/ tabular_figures.ipynb* under the docs folder.
+You can get the results plots by run though *fsdd_figures/cifar_figure/tabular_figures.ipynb* under the docs folder.
 
 <br>
 
